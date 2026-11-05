@@ -190,7 +190,16 @@ onAuthStateChanged(auth, u => {
   if (!u) { $('nav').style.display = 'none'; show('login'); return; }
   $('nav').style.display = '';
   show('p-home');
-  unsub.push(onValue(ref(db, 'axolotl/state'), s => { S = s.val(); render(); }));
+  $('live').querySelector('span').textContent = 'in attesa dei dati...';
+  unsub.push(onValue(ref(db, 'axolotl/state'), s => {
+    S = s.val();
+    if (!S) { $('st').textContent = 'collegata a Firebase, ma la centralina non ha ancora scritto dati'; return; }
+    render();
+  }, e => {
+    $('live').className = 'live off';
+    $('live').querySelector('span').textContent = 'accesso negato';
+    $('st').textContent = 'Firebase rifiuta la lettura (' + (e.code || e.message) + '). Il tuo UID: ' + u.uid;
+  }));
   unsub.push(onValue(ref(db, 'axolotl/cmd/id'), s => { lastCmdId = s.val() || 0; }));
   loadHist(24).then(() => { drawMini(); });
   if (!window._timers) {
