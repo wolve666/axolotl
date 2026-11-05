@@ -127,8 +127,9 @@ input{width:100%;padding:14px;border-radius:14px;border:1px solid #2C313A;backgr
 
 <section id="p-log" class="page">
   <header><h1>Registro</h1></header>
+  <div class="card"><h3>Eventi della centralina</h3><div id="evs" class="note">--</div></div>
   <div class="card" style="padding:6px 12px"><table><thead><tr><th>quando</th><th>acqua</th><th>soglia</th><th>refr.</th></tr></thead><tbody id="logb"></tbody></table></div>
-  <button class="btn ghost" id="csv">Esporta gli ultimi 7 giorni (CSV)</button>
+  <button class="btn ghost" id="csv">Esporta gli ultimi 7 giorni (CSV, con eventi)</button>
 </section>
 
 <section id="p-set" class="page">
@@ -138,6 +139,7 @@ input{width:100%;padding:14px;border-radius:14px;border:1px solid #2C313A;backgr
     <div class="row"><div><div class="t">Correzione sonda</div><div class="s">dopo la prova del ghiaccio</div></div>
       <div class="pm"><button id="om">&minus;</button><b id="ov">+0.0°</b><button id="op">+</button></div></div>
     <div class="row"><div><div class="t">Allarme acqua</div><div class="s">numero e blocco rossi sul display</div></div><b id="alt">23°</b></div>
+    <div class="row"><div><div class="t">Riavvii nelle ultime 24 ore</div><div class="s">dettagli nel Registro</div></div><b id="rb24">--</b></div>
     <div class="row"><div><div class="t">Notifiche sul telefono</div><div class="s">arrivano nella prossima tappa</div></div><span class="note">presto</span></div>
   </div>
   <div class="card note" id="ver">--</div>
@@ -155,7 +157,7 @@ input{width:100%;padding:14px;border-radius:14px;border:1px solid #2C313A;backgr
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, onValue, set, query, orderByKey, startAt, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, set, query, orderByKey, startAt, limitToLast, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyAlzQibQZNmQlxuERUf4HabUeQKmLCpGS8",
@@ -174,7 +176,7 @@ function show(p) {
   document.querySelectorAll('.page').forEach(e => e.classList.toggle('on', e.id === p));
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.p === p));
   if (p === 'p-graph') loadHist(histHours).then(drawBig);
-  if (p === 'p-log' || p === 'p-set') loadHist(168).then(drawLog);
+  if (p === 'p-log' || p === 'p-set') { loadHist(168).then(drawLog); loadEvents(168).then(drawEvents); }
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.p));
 
@@ -299,8 +301,28 @@ async function loadHist(hours) {
   const from = String(Math.floor(Date.now() / 1000) - hours * 3600);
   const snap = await get(query(ref(db, 'axolotl/hist'), orderByKey(), startAt(from)));
   hist = [];
-  snap.forEach(c => { const v = c.val(); hist.push({ ts: +c.key * 1000, w: v.w, t: v.t, c: v.c }); });
+  snap.forEach(c => { const v = c.val(); hist.push({ ts: +c.key * 1000, w: v.w, t: v.t, c: v.c, a: v.a, h: v.h }); });
   return hist;
+}
+// eventi (riavvii con il motivo e il punto del blocco)
+let evs = [];
+async function loadEvents(hours) {
+  const from = String(Math.floor(Date.now() / 1000) - hours * 3600);
+  const snap = await get(query(ref(db, 'axolotl/events'), orderByKey(), startAt(from)));
+  evs = [];
+  snap.forEach(c => { evs.push({ ts: +c.key * 1000, n: (c.val() || {}).n || '' }); });
+  return evs;
+}
+function drawEvents() {
+  const bad = e => /blocco|errore|tensione/.test(e.n);
+  const day = evs.filter(e => e.ts > Date.now() - 86400000);
+  $('rb24').textContent = String(day.filter(bad).length);
+  const last = evs.slice(-30).reverse();
+  $('evs').innerHTML = last.length ? last.map(e => {
+    const d = new Date(e.ts);
+    const q = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    return `<div style="padding:6px 0;border-bottom:1px solid #22262d;color:${bad(e) ? '#FF8A8A' : '#C9CED8'}"><b style="color:#7D8696;font-weight:500">${q}</b> &nbsp;${e.n}</div>`;
+  }).join('') : 'nessun evento negli ultimi 7 giorni';
 }
 function chart(svg, W, H, hours, withAxis) {
   const now = Date.now(), t0 = now - hours * 3600000;
@@ -371,9 +393,13 @@ function drawLog() {
   $('lastal').innerHTML = last ? `<div class="alarm"><div class="t">Acqua a ${f1(last.w)}°</div><div class="s">${new Date(last.ts).toLocaleString('it-IT')}</div></div>` : '';
 }
 $('csv').onclick = async () => {
-  await loadHist(168);
-  let s = 'data;ora;acqua;soglia;refrigeratore\r\n';
-  hist.forEach(p => { const d = new Date(p.ts); s += d.toLocaleDateString('it-IT') + ';' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + ';' + String(p.w).replace('.', ',') + ';' + String(p.t).replace('.', ',') + ';' + p.c + '\r\n'; });
+  await loadHist(168); await loadEvents(168);
+  const num = v => (v == null ? '' : String(v).replace('.', ','));
+  const rows = hist.map(p => ({ ts: p.ts, line: num(p.w) + ';' + num(p.t) + ';' + num(p.a) + ';' + num(p.h) + ';' + (p.c ? 1 : 0) + ';' }))
+    .concat(evs.map(e => ({ ts: e.ts, line: ';;;;;' + e.n })))
+    .sort((x, y) => x.ts - y.ts);
+  let s = 'data;ora;acqua;soglia;ambiente;umidita;refrigeratore;nota\r\n';
+  rows.forEach(r => { const d = new Date(r.ts); s += d.toLocaleDateString('it-IT') + ';' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + ';' + r.line + '\r\n'; });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([s], { type: 'text/csv' }));
   a.download = 'axolotl_registro.csv';
