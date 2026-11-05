@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F1114">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Axolotl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0F1114;--card:#1B1F26;--card2:#2C313A;--tx:#F2F4F7;--mu:#98A1AF;--dim:#7D8696;--mint:#6CCFB0;--amber:#FFB547;--marker:#FFD166;--red:#E5484D;--sun:#F2B134}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:"Plus Jakarta Sans",system-ui,sans-serif}
+body{padding:env(safe-area-inset-top) 0 calc(70px + env(safe-area-inset-bottom))}
+.wrap{max-width:480px;margin:0 auto;padding:12px 16px}
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 12px}
+h1{font-size:22px;font-weight:600;margin:0}
+.live{font-size:12px;color:var(--mu);display:flex;align-items:center;gap:6px}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--mint);display:inline-block}
+.live.off i{background:var(--amber)} .live.off{color:var(--amber)}
+.block{border-radius:24px;padding:16px 18px 18px;transition:background .6s}
+.brow{display:flex;justify-content:space-between;align-items:center}
+.lbl{font-size:13px;opacity:.85}
+.chip{width:44px;height:26px;border-radius:13px;background:rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.35)}
+.dot.on{background:var(--mint);animation:br 2.4s ease-in-out infinite}
+.dot.wait{background:var(--amber)}
+@keyframes br{50%{box-shadow:0 0 0 7px rgba(108,207,176,.25)}}
+.big{font-size:84px;font-weight:500;text-align:center;letter-spacing:-2px;line-height:1.05;margin:6px 0 10px}
+.segs{display:flex;gap:3px;align-items:center;height:30px;margin:0 2px}
+.segs b{flex:1;height:18px;border-radius:2px;background:rgba(255,255,255,.22)}
+.segs b.l{background:#fff} .segs b.a{background:var(--amber)} .segs b.m{height:30px;background:var(--marker);flex:1.3}
+.scale{display:flex;justify-content:space-between;font-size:11px;opacity:.7;margin:4px 2px 0}
+.thr{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.rb{width:46px;height:46px;border-radius:50%;border:0;background:rgba(0,0,0,.22);color:#fff;font-size:26px;line-height:1;font-family:inherit}
+.rb:active{background:rgba(0,0,0,.4)}
+.thr span{font-size:17px;font-weight:600}
+.seg3{display:flex;background:var(--card);border-radius:18px;padding:6px;margin-top:14px;gap:4px}
+.seg3 button{flex:1;border:0;background:none;color:#C9CED8;font:500 15px "Plus Jakarta Sans",sans-serif;padding:11px 0;border-radius:14px}
+.seg3 button.on{background:var(--tx);color:#14171C}
+.timers{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.timers button{border:0;background:var(--card2);color:var(--tx);font:500 13px "Plus Jakarta Sans",sans-serif;padding:8px 14px;border-radius:12px}
+.timers button.on{background:var(--mint);color:#0F1114}
+.status{font-size:12px;color:var(--mu);text-align:center;margin:10px 0 2px;min-height:16px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.tile{border-radius:20px;padding:14px;background:var(--card2)}
+.tile.sun{background:var(--sun);color:#2B1D00}
+.tile small{font-size:11px;opacity:.75;display:block}
+.tile .v{font-size:26px;font-weight:600;margin:6px 0 2px}
+.card{background:var(--card);border-radius:20px;padding:14px;margin-top:12px}
+.card h3{font-size:12px;color:var(--mu);font-weight:500;margin:0 0 8px}
+svg.g{width:100%;display:block}
+.range{display:flex;background:var(--card);border-radius:18px;padding:4px;gap:4px}
+.range button{flex:1;border:0;background:none;color:#C9CED8;font:500 13px "Plus Jakarta Sans",sans-serif;padding:9px 0;border-radius:14px}
+.range button.on{background:var(--tx);color:#14171C}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.stats div{background:var(--card);border-radius:18px;padding:12px;text-align:center}
+.stats small{color:var(--mu);font-size:11px} .stats b{display:block;font-size:20px;font-weight:600;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:8px 4px;border-bottom:1px solid #22262d;text-align:right} th{color:var(--mu);font-weight:500}
+td:first-child,th:first-child{text-align:left}
+.row{display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:1px solid #2C313A}
+.row:last-child{border-bottom:0}
+.row .t{font-size:14px} .row .s{font-size:11px;color:var(--mu);margin-top:2px}
+.pm{display:flex;align-items:center;gap:10px}
+.pm button{width:34px;height:34px;border-radius:50%;border:0;background:var(--card2);color:var(--tx);font-size:20px}
+.pm b{min-width:56px;text-align:center;font-size:16px}
+.alarm{background:#B3262E;border-radius:20px;padding:14px 16px;margin-bottom:12px}
+.alarm .t{font-weight:600} .alarm .s{font-size:12px;color:#FFD6D8;margin-top:4px}
+.btn{width:100%;border:0;border-radius:16px;padding:14px;font:600 15px "Plus Jakarta Sans",sans-serif;background:var(--tx);color:#14171C;margin-top:12px}
+.btn.ghost{background:var(--card2);color:var(--tx)}
+nav{position:fixed;left:0;right:0;bottom:0;background:#15181C;display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav div{display:flex;max-width:480px;width:100%}
+nav button{flex:1;border:0;background:none;color:var(--dim);font:500 12px "Plus Jakarta Sans",sans-serif;padding:12px 0 14px;display:flex;flex-direction:column;align-items:center;gap:5px}
+nav button i{width:5px;height:5px;border-radius:50%;background:transparent}
+nav button.on{color:var(--tx)} nav button.on i{background:var(--tx)}
+.page{display:none} .page.on{display:block}
+input{width:100%;padding:14px;border-radius:14px;border:1px solid #2C313A;background:var(--card);color:var(--tx);font:15px "Plus Jakarta Sans",sans-serif;margin-top:10px}
+.err{color:var(--red);font-size:13px;margin-top:10px;min-height:18px}
+.note{font-size:12px;color:var(--mu);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="login" class="page">
+  <header><h1>Axolotl</h1></header>
+  <div class="card">
+    <h3>Accedi con l'account che hai creato in Firebase</h3>
+    <input id="em" type="email" placeholder="Email" autocomplete="username">
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn" id="go">Entra</button>
+    <div class="err" id="lerr"></div>
+  </div>
+</section>
+
+<section id="p-home" class="page">
+  <header><h1>Axolotl</h1><div class="live" id="live"><i></i><span>...</span></div></header>
+  <div class="block" id="blk">
+    <div class="brow"><span class="lbl">Acqua</span><div class="chip"><div class="dot" id="dot"></div></div></div>
+    <div class="big" id="wt">--.-°</div>
+    <div class="segs" id="segs"></div>
+    <div class="scale"><span>10°</span><span>26°</span></div>
+    <div class="thr"><button class="rb" id="tm">&minus;</button><span id="tv">soglia --</span><button class="rb" id="tp">+</button></div>
+  </div>
+  <div class="seg3" id="modes"><button data-m="0">Auto</button><button data-m="1">Accesa</button><button data-m="2">Spenta</button></div>
+  <div class="timers" id="timers"></div>
+  <div class="status" id="st"></div>
+  <div class="tiles">
+    <div class="tile"><small>Ambiente</small><div class="v" id="amb">--</div><small id="hum">umidità --</small></div>
+    <div class="tile sun"><small>Meteo</small><div class="v" id="wxt">--</div><small id="wxd">--</small></div>
+  </div>
+  <div class="card"><h3>Ultime 24 ore</h3><svg class="g" id="mini" viewBox="0 0 300 70"></svg></div>
+</section>
+
+<section id="p-graph" class="page">
+  <header><h1>Grafico</h1></header>
+  <div class="range" id="range"><button data-h="24" class="on">24 ore</button><button data-h="72">3 giorni</button><button data-h="168">7 giorni</button></div>
+  <div class="card"><svg class="g" id="big" viewBox="0 0 300 220"></svg>
+    <div class="note"><span style="color:var(--mint)">&#9632;</span> refrigeratore acceso &nbsp; <span style="color:var(--marker)">- -</span> soglia</div></div>
+  <div class="stats"><div><small>minima</small><b id="smin">--</b></div><div><small>media</small><b id="savg">--</b></div><div><small>massima</small><b id="smax">--</b></div></div>
+  <div class="card"><h3>Refrigeratore oggi</h3><div style="font-size:17px;font-weight:600" id="ron">--</div></div>
+</section>
+
+<section id="p-log" class="page">
+  <header><h1>Registro</h1></header>
+  <div class="card" style="padding:6px 12px"><table><thead><tr><th>quando</th><th>acqua</th><th>soglia</th><th>refr.</th></tr></thead><tbody id="logb"></tbody></table></div>
+  <button class="btn ghost" id="csv">Esporta gli ultimi 7 giorni (CSV)</button>
+</section>
+
+<section id="p-set" class="page">
+  <header><h1>Avvisi</h1></header>
+  <div id="lastal"></div>
+  <div class="card">
+    <div class="row"><div><div class="t">Correzione sonda</div><div class="s">dopo la prova del ghiaccio</div></div>
+      <div class="pm"><button id="om">&minus;</button><b id="ov">+0.0°</b><button id="op">+</button></div></div>
+    <div class="row"><div><div class="t">Allarme acqua</div><div class="s">numero e blocco rossi sul display</div></div><b id="alt">23°</b></div>
+    <div class="row"><div><div class="t">Notifiche sul telefono</div><div class="s">arrivano nella prossima tappa</div></div><span class="note">presto</span></div>
+  </div>
+  <div class="card note" id="ver">--</div>
+  <button class="btn ghost" id="out">Esci</button>
+</section>
+
+</div>
+<nav id="nav" style="display:none"><div>
+  <button data-p="p-home" class="on"><i></i>Casa</button>
+  <button data-p="p-graph"><i></i>Grafico</button>
+  <button data-p="p-log"><i></i>Registro</button>
+  <button data-p="p-set"><i></i>Avvisi</button>
+</div></nav>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, onValue, set, query, orderByKey, startAt, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAlzQibQZNmQlxuERUf4HabUeQKmLCpGS8",
+  authDomain: "axolotl-monitor.firebaseapp.com",
+  databaseURL: "https://axolotl-monitor-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "axolotl-monitor",
+  appId: "1:487805819344:web:f87559ab177f623286c1d5"
+});
+const auth = getAuth(app), db = getDatabase(app);
+const $ = id => document.getElementById(id);
+const TMIN = 10, TMAX = 26, WARN = 21;
+let S = null, lastCmdId = 0, pendT = null, pendTAt = 0, hist = [], histHours = 24, unsub = [];
+
+// ---- navigazione ----
+function show(p) {
+  document.querySelectorAll('.page').forEach(e => e.classList.toggle('on', e.id === p));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.p === p));
+  if (p === 'p-graph') loadHist(histHours).then(drawBig);
+  if (p === 'p-log' || p === 'p-set') loadHist(168).then(drawLog);
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.p));
+
+// ---- accesso ----
+$('go').onclick = async () => {
+  $('lerr').textContent = '';
+  try { await signInWithEmailAndPassword(auth, $('em').value.trim(), $('pw').value); }
+  catch (e) { $('lerr').textContent = 'Accesso non riuscito: controlla email e password.'; }
+};
+$('out').onclick = () => signOut(auth);
+onAuthStateChanged(auth, u => {
+  unsub.forEach(f => f()); unsub = [];
+  if (!u) { $('nav').style.display = 'none'; show('login'); return; }
+  $('nav').style.display = '';
+  show('p-home');
+  unsub.push(onValue(ref(db, 'axolotl/state'), s => { S = s.val(); render(); }));
+  unsub.push(onValue(ref(db, 'axolotl/cmd/id'), s => { lastCmdId = s.val() || 0; }));
+  loadHist(24).then(() => { drawMini(); });
+  if (!window._timers) {
+    window._timers = true;
+    setInterval(() => { render(); }, 15000);
+    setInterval(() => { if (auth.currentUser) loadHist(24).then(drawMini); }, 300000);
+  }
+});
+
+// ---- comandi: la centralina li legge entro pochi secondi ----
+function send(fields) {
+  const id = Math.max(Math.floor(Date.now() / 1000), lastCmdId + 1);
+  lastCmdId = id;
+  $('st').textContent = 'invio alla centralina...';
+  return set(ref(db, 'axolotl/cmd'), Object.assign({ id }, fields));
+}
+
+// ---- colori della temperatura (come sul display) ----
+const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+function mix(c1, c2, t) { return [0, 1, 2].map(i => lerp(c1[i], c2[i], t)); }
+function heat(w, alT) {
+  const st = [[12, 124, 127], [181, 138, 18], [196, 96, 28], [179, 38, 46]];
+  const at = [WARN, WARN + .4 * (alT - WARN), WARN + .7 * (alT - WARN), alT];
+  if (w <= at[0]) return st[0];
+  for (let i = 1; i < 4; i++) if (w <= at[i]) return mix(st[i - 1], st[i], (w - at[i - 1]) / (at[i] - at[i - 1]));
+  return st[3];
+}
+const rgb = c => `rgb(${c[0]},${c[1]},${c[2]})`;
+const f1 = v => (v == null ? '--' : Number(v).toFixed(1));
+const ago = ms => { const m = Math.round(ms / 60000); return m < 1 ? 'ora' : m < 60 ? m + ' min fa' : Math.round(m / 60) + ' h fa'; };
+
+// ---- casa ----
+function render() {
+  if (!S) return;
+  const age = S.ts ? Date.now() - S.ts : 1e9, online = age < 90000;
+  $('live').className = 'live' + (online ? '' : ' off');
+  $('live').querySelector('span').textContent = online ? 'online · ora' : 'ultimo contatto ' + ago(age);
+  const ok = S.w != null, w = ok ? S.w : 0, alT = S.alT || 23;
+  $('blk').style.background = rgb(ok ? heat(w, alT) : [70, 74, 82]);
+  $('wt').textContent = ok ? w.toFixed(1) + '°' : '--.-°';
+  if (pendT != null && (Math.abs(S.t - pendT) < 0.01 || Date.now() - pendTAt > 20000)) pendT = null;
+  const t = pendT != null ? pendT : S.t;
+  $('tv').textContent = 'soglia ' + f1(t) + '°';
+  let h = '';
+  const mI = Math.round((t - TMIN) / 0.5);
+  for (let i = 0; i <= 32; i++) {
+    const v = TMIN + i * 0.5;
+    if (i === mI) { h += '<b class="m"></b>'; continue; }
+    const lit = ok && v <= w + 0.01;
+    h += '<b class="' + (lit ? (v > t ? 'a' : 'l') : '') + '"></b>';
+  }
+  $('segs').innerHTML = h;
+  $('dot').className = 'dot' + (S.ps === 1 ? ' on' : S.ps === 2 ? ' wait' : '');
+  document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('on', +b.dataset.m === S.m));
+  const tm = $('timers');
+  tm.innerHTML = '';
+  if (S.m === 1 || S.m === 2) {
+    [['fisso', 0], ['30 min', 1], ['1 h', 2], ['2 h', 3]].forEach(([lb, st]) => {
+      const b = document.createElement('button');
+      b.textContent = lb; b.className = S.step === st ? 'on' : '';
+      b.onclick = () => send({ m: S.m, step: st });
+      tm.appendChild(b);
+    });
+  }
+  let s = S.ps === 1 ? 'raffredda' : S.ps === 2 ? 'in attesa (pausa del compressore)' : 'a riposo';
+  if (S.m !== 0 && S.step > 0) s += ' · ancora ' + S.rem + ' min';
+  if (S.al) s = 'ATTENZIONE: acqua oltre ' + alT + '°';
+  if (!ok) s = 'la sonda non risponde';
+  $('st').textContent = s;
+  $('amb').textContent = S.a != null ? f1(S.a) + '°' : '--';
+  $('hum').textContent = 'umidità ' + (S.h != null ? S.h + '%' : '--');
+  if (S.wx) { $('wxt').textContent = Math.round(S.wx.t) + '°'; $('wxd').textContent = wxText(S.wx.c); }
+  $('ov').textContent = (S.off >= 0 ? '+' : '') + Number(S.off || 0).toFixed(1) + '°';
+  $('alt').textContent = alT + '°';
+  $('ver').textContent = 'Centralina ' + (S.ver || '') + ' · ultimo dato ' + ago(age);
+}
+function wxText(c) {
+  if (c === 0) return 'Sereno'; if (c <= 2) return 'Poco nuvoloso'; if (c === 3) return 'Nuvoloso';
+  if (c === 45 || c === 48) return 'Nebbia'; if (c >= 51 && c <= 67) return 'Pioggia'; if (c >= 71 && c <= 77) return 'Neve';
+  if (c >= 80 && c <= 82) return 'Rovesci'; if (c >= 95) return 'Temporale'; return '--';
+}
+$('tm').onclick = () => step(-0.5);
+$('tp').onclick = () => step(0.5);
+function step(d) {
+  if (!S) return;
+  const base = pendT != null ? pendT : S.t;
+  pendT = Math.min(TMAX, Math.max(TMIN, base + d)); pendTAt = Date.now();
+  render();
+  send({ t: pendT });
+}
+document.querySelectorAll('#modes button').forEach(b => b.onclick = () => send({ m: +b.dataset.m, step: 0 }));
+$('om').onclick = () => S && send({ off: Math.round(((S.off || 0) - 0.1) * 10) / 10 });
+$('op').onclick = () => S && send({ off: Math.round(((S.off || 0) + 0.1) * 10) / 10 });
+
+// ---- storico ----
+async function loadHist(hours) {
+  const from = String(Math.floor(Date.now() / 1000) - hours * 3600);
+  const snap = await get(query(ref(db, 'axolotl/hist'), orderByKey(), startAt(from)));
+  hist = [];
+  snap.forEach(c => { const v = c.val(); hist.push({ ts: +c.key * 1000, w: v.w, t: v.t, c: v.c }); });
+  return hist;
+}
+function chart(svg, W, H, hours, withAxis) {
+  const now = Date.now(), t0 = now - hours * 3600000;
+  const pts = hist.filter(p => p.ts >= t0 && p.w != null);
+  if (pts.length < 2) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" fill="#7D8696" font-size="12" text-anchor="middle">i dati arrivano ogni 5 minuti</text>`; return pts; }
+  let lo = Math.min(...pts.map(p => Math.min(p.w, p.t))), hi = Math.max(...pts.map(p => Math.max(p.w, p.t)));
+  lo -= 0.3; hi += 0.3; if (hi - lo < 2) { const m = (hi + lo) / 2; lo = m - 1; hi = m + 1; }
+  const pb = withAxis ? 18 : 4, X = ts => 4 + (ts - t0) / (now - t0) * (W - 8), Y = v => 4 + (hi - v) / (hi - lo) * (H - 8 - pb);
+  let g = '';
+  for (let i = 1; i < pts.length; i++) if (pts[i - 1].c) {          // fasce del refrigeratore acceso
+    const x0 = X(pts[i - 1].ts), x1 = X(pts[i].ts);
+    if (pts[i].ts - pts[i - 1].ts < 900000) g += `<rect x="${x0}" y="4" width="${Math.max(1, x1 - x0)}" height="${H - 8 - pb}" fill="#6CCFB0" fill-opacity=".16"/>`;
+  }
+  let tp = '', wp = '';
+  pts.forEach((p, i) => { tp += (i ? 'L' : 'M') + X(p.ts).toFixed(1) + ' ' + Y(p.t).toFixed(1); wp += (i ? 'L' : 'M') + X(p.ts).toFixed(1) + ' ' + Y(p.w).toFixed(1); });
+  g += `<path d="${tp}" fill="none" stroke="#FFD166" stroke-opacity=".6" stroke-dasharray="3 4" stroke-width="1.2"/>`;
+  g += `<path d="${wp} L${X(pts[pts.length - 1].ts).toFixed(1)} ${H - pb} L${X(pts[0].ts).toFixed(1)} ${H - pb}Z" fill="#2FC9CC" fill-opacity=".1"/>`;
+  g += `<path d="${wp}" fill="none" stroke="#2FC9CC" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if (withAxis) {
+    const step = hours <= 24 ? 6 : 24;
+    for (let k = 0; k <= hours; k += step) {
+      const ts = t0 + k * 3600000, d = new Date(ts);
+      const lb = hours <= 24 ? String(d.getHours()) : ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'][d.getDay()];
+      g += `<text x="${X(ts)}" y="${H - 4}" fill="#7D8696" font-size="10" text-anchor="middle">${lb}</text>`;
+    }
+    g += `<text x="${W - 4}" y="${Y(hi - 0.3) + 10}" fill="#7D8696" font-size="10" text-anchor="end">${hi.toFixed(1)}°</text>`;
+    g += `<text x="${W - 4}" y="${Y(lo + 0.3) - 4}" fill="#7D8696" font-size="10" text-anchor="end">${lo.toFixed(1)}°</text>`;
+  }
+  svg.innerHTML = g;
+  return pts;
+}
+function drawMini() { chart($('mini'), 300, 70, 24, false); }
+function drawBig() {
+  const pts = chart($('big'), 300, 220, histHours, true);
+  if (pts.length < 2) return;
+  const ws = pts.map(p => p.w);
+  $('smin').textContent = Math.min(...ws).toFixed(1) + '°';
+  $('smax').textContent = Math.max(...ws).toFixed(1) + '°';
+  $('savg').textContent = (ws.reduce((a, b) => a + b, 0) / ws.length).toFixed(1) + '°';
+  const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+  const today = hist.filter(p => p.ts >= midnight.getTime());
+  let on = 0, starts = 0;
+  for (let i = 1; i < today.length; i++) {
+    const dt = today[i].ts - today[i - 1].ts;
+    if (today[i - 1].c && dt < 900000) on += dt;
+    if (today[i].c && !today[i - 1].c) starts++;
+  }
+  $('ron').textContent = Math.floor(on / 3600000) + ' h ' + Math.round((on % 3600000) / 60000) + ' min · ' + starts + ' avvii';
+}
+document.querySelectorAll('#range button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#range button').forEach(x => x.classList.toggle('on', x === b));
+  histHours = +b.dataset.h;
+  loadHist(histHours).then(drawBig);
+});
+
+// ---- registro ----
+function drawLog() {
+  const rows = hist.slice(-120).reverse();
+  $('logb').innerHTML = rows.map(p => {
+    const d = new Date(p.ts);
+    const q = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    return `<tr><td>${q}</td><td>${f1(p.w)}°</td><td>${f1(p.t)}°</td><td>${p.c ? 'acceso' : '-'}</td></tr>`;
+  }).join('') || '<tr><td colspan="4" style="text-align:center;color:#7D8696">nessun dato ancora</td></tr>';
+  // ultimo allarme
+  const alT = (S && S.alT) || 23;
+  let last = null;
+  for (let i = hist.length - 1; i >= 0; i--) if (hist[i].w >= alT) { last = hist[i]; break; }
+  $('lastal').innerHTML = last ? `<div class="alarm"><div class="t">Acqua a ${f1(last.w)}°</div><div class="s">${new Date(last.ts).toLocaleString('it-IT')}</div></div>` : '';
+}
+$('csv').onclick = async () => {
+  await loadHist(168);
+  let s = 'data;ora;acqua;soglia;refrigeratore\r\n';
+  hist.forEach(p => { const d = new Date(p.ts); s += d.toLocaleDateString('it-IT') + ';' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + ';' + String(p.w).replace('.', ',') + ';' + String(p.t).replace('.', ',') + ';' + p.c + '\r\n'; });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([s], { type: 'text/csv' }));
+  a.download = 'axolotl_registro.csv';
+  a.click();
+};
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
